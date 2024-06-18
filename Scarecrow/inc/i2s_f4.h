@@ -70,6 +70,6 @@ extern i2s_drv_t _i2s3_drv;
 
 
 void i2s_Init(i2s_drv_t* pDrv, gpio_pins_e eClkPin, gpio_pins_e eDataPin, gpio_pins_e eWordSelectPin, i2s_standard eStandard, i2s_sample_freq eSmapleFreq);
-void i2s_SendMonoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint16_t nDataLen);
-void i2s_SendStereoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint16_t nDataLen);
+void i2s_SendMonoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint32_t nDataLen);
+void i2s_SendStereoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint32_t nDataLen);
 void i2s_WaitForNoBusy(i2s_drv_t* pDrv);

@@ -87,7 +87,7 @@ void i2s_Init(i2s_drv_t* pDrv, gpio_pins_e eClkPin, gpio_pins_e eDataPin, gpio_p
   LL_I2S_Enable(pDrv->pHW->reg);
 }
 
-void i2s_SendMonoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint16_t nDataLen)
+void i2s_SendMonoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint32_t nDataLen)
 {
   while (nDataLen-- > 0)
   {
@@ -98,7 +98,7 @@ void i2s_SendMonoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint16_t nDataLen)
   }
 }
 
-void i2s_SendStereoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint16_t nDataLen)
+void i2s_SendStereoBuffer16(i2s_drv_t* pDrv, uint16_t* pData, uint32_t nDataLen)
 {
   while (nDataLen-- > 0)
   {
