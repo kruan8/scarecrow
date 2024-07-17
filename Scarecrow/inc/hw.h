@@ -13,7 +13,11 @@
 
 bool HW_Init(void);
 void HW_SetBoardLed(bool bOn);
+void HW_SetMp3Supply(bool bOn);
+bool HW_GetBusyInput(void);
 
 void HW_ReadCPUID(void);
+
+void HW_SetFileNumber(uint8_t nFileNumber);
 
 #endif /* INC_HW_H_ */
