@@ -11,12 +11,13 @@
 #include "stm32f4xx.h"
 #include <stdbool.h>
 
+typedef uint64_t timer_tick_t;
 typedef void(*PtrSysTickCallback) (void);
 
 void Timer_Init();
 void Timer_SystickUpdate(void);
 void Timer_Delay_ms(uint32_t delay_ms);
-uint32_t Timer_GetTicks_ms();
+timer_tick_t Timer_GetTicks_ms();
 bool Timer_SetSysTickCallback(PtrSysTickCallback pFunction);
 
 void TimerUs_init(void);

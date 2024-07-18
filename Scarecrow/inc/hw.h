@@ -14,7 +14,8 @@
 bool HW_Init(void);
 void HW_SetBoardLed(bool bOn);
 void HW_SetMp3Supply(bool bOn);
-bool HW_GetBusyInput(void);
+bool HW_IsPlayerBusy(void);
+bool HW_IsPirActive(void);
 
 void HW_ReadCPUID(void);
 

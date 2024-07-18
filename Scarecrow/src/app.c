@@ -10,50 +10,82 @@
 #include "hw.h"
 #include "sounds.inc"
 #include "timer.h"
+#include "watchdog.h"
+
+#define BEEP_PAUSE_MS       5000
 
 i2s_drv_t* pI2s = i2s2;
 spi_drv_t* pSpi = spi1;
 
-void _PlayBeepSound(uint8_t nFileNumber);
+void _PlaySound(uint8_t nFileNumber);
 void _PlaySound16bit(const uint16_t* const pData, const uint32_t nSamples);
 
 void App_Init(void)
 {
   HW_Init();
 
-//  spi_Init(pSpi, PA5, PA7, PA6);
-//  i2s_Init(pI2s, PB13, PB15, PB9, i2s_standard_msb, i2s_freq_8K);
-
-  HW_SetMp3Supply(true);
-
-  Timer_Delay_ms(300);
 }
 
 void App_Exec(void)
 {
-
   // beep files 1-7
   // alarm files 10-18
-  _PlayBeepSound(1);
-  _PlayBeepSound(2);
-  _PlayBeepSound(3);
-  _PlayBeepSound(4);
-  _PlayBeepSound(5);
-  _PlayBeepSound(6);
-  _PlayBeepSound(7);
+
+  const uint8_t arrBeepSounds[] =
+  {
+      1, 2, 3, 4, 5, 6, 7, 4, 2, 1, 7, 3, 6, 5
+  };
+
+  const uint8_t arrAlarmSounds[] =
+  {
+      10, 11, 12, 13, 14, 15, 16, 17, 18,
+  };
+
+  uint8_t nAlarmIdx = 0;
+
+  for (uint8_t i = 0; i < sizeof (arrBeepSounds); i++)
+  {
+    _PlaySound(arrBeepSounds[i]);
+
+    // wait time between beep sounds
+    uint32_t nEndBeepTime = Timer_GetTicks_ms() + BEEP_PAUSE_MS;
+    while (Timer_GetTicks_ms() < nEndBeepTime)
+    {
+
+      __WFI();
+
+      WDG_SimpleRefresh();
+
+      if (HW_IsPirActive() == true)
+      {
+        nEndBeepTime = Timer_GetTicks_ms();
+      }
+    }
+
+    // loop for alarm sound
+    while (HW_IsPirActive() == true)
+    {
+      _PlaySound(nAlarmIdx);
+      Timer_Delay_ms(500);
+      nAlarmIdx++;
+      if (nAlarmIdx > sizeof(arrAlarmSounds))
+      {
+        nAlarmIdx = 0;
+      }
+    }
+  }
+
 }
 
-void _PlaySound16bit(const uint16_t* const pData, const uint32_t nSamples)
+void _PlaySound(uint8_t nFileNumber)
 {
-  i2s_SendMonoBuffer16(pI2s, (uint16_t*)pData, nSamples);
-}
+  HW_SetMp3Supply(true);
 
-void _PlayBeepSound(uint8_t nFileNumber)
-{
   HW_SetFileNumber(nFileNumber);
-  while(!HW_GetBusyInput());
-
-  while(HW_GetBusyInput());
+  while(!HW_IsPlayerBusy());
   HW_SetFileNumber(0);
-  Timer_Delay_ms(5000);
+  while(HW_IsPlayerBusy());
+
+  HW_SetMp3Supply(false);
+
 }

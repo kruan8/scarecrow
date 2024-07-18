@@ -9,6 +9,7 @@
 #include "common_f4.h"
 #include "timer.h"
 #include "clock_f4.h"
+#include "watchdog.h"
 
 #include <stm32f4xx_ll_adc.h>
 #include <stm32f4xx_ll_bus.h>
@@ -43,6 +44,11 @@ bool HW_Init(void)
 {
 //  Clock_SetPLLasSysClk(8, 100, 2, CLOCK_SOURCE_HSI);  // 16 / 8 * 100 / 2 = 100Mhz
 
+  // HSI 16MHz / 4 = 4MHz
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_4);
+
+  WDG_Init(WDG_Timeout_32s);
+
   Timer_Init();
 
   // configure board LED
@@ -60,23 +66,25 @@ bool HW_Init(void)
 
   HW_SetFileNumber(0);
 
+  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_down, speed_low);
+
   GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
   GPIO_RESETPIN(HW_CONF_PIN);
-
-  GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  HW_SetMp3Supply(false);
-
-  HW_SetMp3Supply(true);
-  Timer_Delay_ms(300);
-
-  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_no, speed_low);
 
   return true;
 }
 
 void HW_SetMp3Supply(bool bOn)
 {
-  bOn ? HW_SUPPLY_CTRL_ON : HW_SUPPLY_CTRL_OFF;
+  if (bOn)
+  {
+    HW_SUPPLY_CTRL_ON;
+    Timer_Delay_ms(300);
+  }
+  else
+  {
+    HW_SUPPLY_CTRL_OFF;
+  }
 }
 
 void HW_SetBoardLed(bool bOn)
@@ -84,9 +92,14 @@ void HW_SetBoardLed(bool bOn)
   bOn ? BOARD_LED_ON : BOARD_LED_OFF;
 }
 
-bool HW_GetBusyInput(void)
+bool HW_IsPlayerBusy(void)
 {
   return GET_PORT(HW_BUSY_INPUT)->IDR & GET_PIN(HW_BUSY_INPUT);
+}
+
+bool HW_IsPirActive(void)
+{
+  return GET_PORT(HW_PIR_INPUT)->IDR & GET_PIN(HW_PIR_INPUT);
 }
 
 void HW_ReadCPUID(void)

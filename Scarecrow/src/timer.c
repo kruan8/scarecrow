@@ -6,10 +6,11 @@
  */
 
 #include "timer.h"
-#include "common_f4.h"
-
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_rcc.h"
+
+//#include "FreeRTOS.h"
+//#include "task.h"
 
 #define TIMER_US      TIM9         // basic timer for us interval
 #define TIMER_US_CLK  LL_APB2_GRP1_PERIPH_TIM9
@@ -19,7 +20,7 @@
 static PtrSysTickCallback g_pSysTickCallback[TIMER_CALLBACKS] = { 0 };
 static uint8_t g_nCallbacks = 0;
 
-static volatile uint32_t g_nTicks = 0;
+static volatile timer_tick_t g_nTicks = 0;
 
 void Timer_Init(void)
 {
@@ -39,17 +40,6 @@ void Timer_SystickUpdate(void)
   }
 }
 
-void Timer_Delay_ms(uint32_t delay_ms)
-{
-  uint32_t nEndTime = g_nTicks + delay_ms;
-  while (g_nTicks < nEndTime);
-}
-
-uint32_t Timer_GetTicks_ms()
-{
-  return g_nTicks;
-}
-
 bool Timer_SetSysTickCallback(PtrSysTickCallback pSysTickCallback)
 {
   if (g_nCallbacks < TIMER_CALLBACKS)
@@ -62,7 +52,33 @@ bool Timer_SetSysTickCallback(PtrSysTickCallback pSysTickCallback)
   return false;
 }
 
-void SysTick_Handler(void)
+void Timer_Delay_ms(uint32_t delay_ms)
+{
+  uint32_t nEndTime = g_nTicks + delay_ms;
+  while (g_nTicks < nEndTime);
+
+//  vTaskDelay(delay_ms / portTICK_PERIOD_MS);
+}
+
+timer_tick_t Timer_GetTicks_ms()
+{
+  return g_nTicks;
+}
+
+//void SysTick_Handler(void)
+//{
+//  g_nTicks++;
+//
+//  for (uint8_t i = 0; i < TIMER_CALLBACKS; i++)
+//  {
+//    if (g_pSysTickCallback[i])
+//    {
+//      g_pSysTickCallback[i]();
+//    }
+//  }
+//}
+
+void vApplicationTickHook(void)
 {
   g_nTicks++;
 
@@ -81,15 +97,16 @@ void TimerUs_init(void)
 
   // Enable clock for TIM_US
   LL_APB2_GRP1_EnableClock(TIMER_US_CLK);
+
   Timer_UsStart();
 }
 
 void Timer_UsStart(void)
 {
   LL_RCC_ClocksTypeDef RCC_Clocks;
-  LL_RCC_GetSystemClocksFreq(&RCC_Clocks);
+  LL_RCC_GetSystemClocksFreq(&RCC_Clocks); // Get system clocks
 
-  TIMER_US->PSC = RCC_Clocks.PCLK2_Frequency / 1000000; // 1 MHz
+  TIMER_US->PSC = RCC_Clocks.PCLK1_Frequency / 1000000; // 1 MHz
   TIMER_US->CNT = 0;
   TIMER_US->EGR = TIM_EGR_UG;
   TIMER_US->CR1 |= TIM_CR1_CEN;
@@ -115,3 +132,4 @@ void Timer_UsStop(void)
 {
   TIMER_US->CR1 &= ~TIM_CR1_CEN;
 }
+
