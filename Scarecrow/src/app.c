@@ -52,8 +52,8 @@ void _PlayBeepSound(uint8_t nFileNumber)
 {
   HW_SetFileNumber(nFileNumber);
   while(!HW_GetBusyInput());
-  Timer_Delay_ms(300);
-  HW_SetFileNumber(0);
+
   while(HW_GetBusyInput());
+  HW_SetFileNumber(0);
   Timer_Delay_ms(5000);
 }

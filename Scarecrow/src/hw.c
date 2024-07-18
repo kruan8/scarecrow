@@ -60,9 +60,8 @@ bool HW_Init(void)
 
   HW_SetFileNumber(0);
 
-  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_no, speed_low);
-//  GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
-//  GPIO_RESETPIN(HW_CONF_PIN);
+  GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
+  GPIO_RESETPIN(HW_CONF_PIN);
 
   GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_pushpull, pushpull_no, speed_low);
   HW_SetMp3Supply(false);
@@ -70,7 +69,7 @@ bool HW_Init(void)
   HW_SetMp3Supply(true);
   Timer_Delay_ms(300);
 
-//  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_no, speed_low);
 
   return true;
 }
