@@ -65,18 +65,18 @@ timer_tick_t Timer_GetTicks_ms()
   return g_nTicks;
 }
 
-//void SysTick_Handler(void)
-//{
-//  g_nTicks++;
-//
-//  for (uint8_t i = 0; i < TIMER_CALLBACKS; i++)
-//  {
-//    if (g_pSysTickCallback[i])
-//    {
-//      g_pSysTickCallback[i]();
-//    }
-//  }
-//}
+void SysTick_Handler(void)
+{
+  g_nTicks++;
+
+  for (uint8_t i = 0; i < TIMER_CALLBACKS; i++)
+  {
+    if (g_pSysTickCallback[i])
+    {
+      g_pSysTickCallback[i]();
+    }
+  }
+}
 
 void vApplicationTickHook(void)
 {

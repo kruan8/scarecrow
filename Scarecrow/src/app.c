@@ -12,7 +12,7 @@
 #include "timer.h"
 #include "watchdog.h"
 
-#define BEEP_PAUSE_MS       5000
+#define BEEP_PAUSE_MS       10000
 
 i2s_drv_t* pI2s = i2s2;
 spi_drv_t* pSpi = spi1;
@@ -65,10 +65,10 @@ void App_Exec(void)
     // loop for alarm sound
     while (HW_IsPirActive() == true)
     {
-      _PlaySound(nAlarmIdx);
-      Timer_Delay_ms(500);
+      _PlaySound(arrAlarmSounds[nAlarmIdx]);
+      Timer_Delay_ms(1000);
       nAlarmIdx++;
-      if (nAlarmIdx > sizeof(arrAlarmSounds))
+      if (nAlarmIdx >= sizeof(arrAlarmSounds))
       {
         nAlarmIdx = 0;
       }
@@ -87,5 +87,9 @@ void _PlaySound(uint8_t nFileNumber)
   while(HW_IsPlayerBusy());
 
   HW_SetMp3Supply(false);
+
+  HW_SetBoardLed(true);
+  Timer_Delay_ms(100);
+  HW_SetBoardLed(false);
 
 }
