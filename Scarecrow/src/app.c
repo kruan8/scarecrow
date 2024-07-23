@@ -113,4 +113,8 @@ void _PlaySound(uint8_t nFileNumber)
 
   HW_SetMp3Supply(false);
 
+  HW_SetBoardLed(true);
+  Timer_Delay_ms(100);
+  HW_SetBoardLed(false);
+
 }
