@@ -47,13 +47,17 @@ bool HW_Init(void)
   // HSI 16MHz / 4 = 4MHz
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_4);
 
-  WDG_Init(WDG_Timeout_32s);
+//  WDG_Init(WDG_Timeout_32s);
 
   Timer_Init();
 
   // configure board LED
   GPIO_ConfigPin(BOARD_LED, mode_output, outtype_pushpull, pushpull_no, speed_low);
   BOARD_LED_OFF;
+
+  // supply ctrl pin and set supply off
+  HW_SUPPLY_CTRL_OFF;
+  GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_pushpull, pushpull_no, speed_low);
 
   GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_pushpull, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_pushpull, pushpull_no, speed_low);
@@ -66,10 +70,10 @@ bool HW_Init(void)
 
   HW_SetFileNumber(0);
 
-  GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_down, speed_low);
-
   GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
   GPIO_RESETPIN(HW_CONF_PIN);
+
+  GPIO_ConfigPin(HW_PIR_INPUT, mode_input, outtype_pushpull, pushpull_no, speed_low);
 
   return true;
 }
@@ -80,6 +84,7 @@ void HW_SetMp3Supply(bool bOn)
   {
     HW_SUPPLY_CTRL_ON;
     Timer_Delay_ms(300);
+    GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_down, speed_low);
   }
   else
   {
