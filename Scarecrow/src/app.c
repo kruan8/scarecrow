@@ -79,7 +79,7 @@ void _BeepMode(void)
 
   _PlaySound(arrBeepSounds[nBeepIdx]);
   nBeepIdx++;
-  if (nBeepIdx > sizeof(nBeepIdx))
+  if (nBeepIdx > sizeof(arrBeepSounds))
   {
     nBeepIdx = 0;
   }
@@ -94,7 +94,7 @@ void _AlarmMode(void)
   };
   static uint8_t nAlarmIdx = 0;
 
-  _PlaySound(nAlarmIdx);
+  _PlaySound(arrAlarmSounds[nAlarmIdx]);
   nAlarmIdx++;
   if (nAlarmIdx > sizeof(arrAlarmSounds))
   {
