@@ -12,7 +12,7 @@
 #include "timer.h"
 #include "watchdog.h"
 
-#define BEEP_PAUSE_MS       15000
+#define BEEP_PAUSE_MS       17000
 
 typedef enum
 {
@@ -54,14 +54,14 @@ void App_Exec(void)
   }
 
   // wait time between beep sounds
-  uint32_t nEndBeepTime = Timer_GetTicks_ms() + BEEP_PAUSE_MS;
-  while (Timer_GetTicks_ms() < nEndBeepTime)
+  uint32_t nNextBeepCycle_ms = Timer_GetTicks_ms() + BEEP_PAUSE_MS;
+  while (Timer_GetTicks_ms() < nNextBeepCycle_ms)
   {
     __WFI();
     if (HW_IsPirActive() == true)
     {
-      nEndBeepTime = Timer_GetTicks_ms();
       eMode = APP_MODE_ALARM;
+      break;
     }
   }
 
@@ -69,10 +69,10 @@ void App_Exec(void)
 
 void _BeepMode(void)
 {
-  // beep files 1-7
+  // beep files 1-9
   const uint8_t arrBeepSounds[] =
   {
-      1, 2, 3, 4, 5, 6, 7, 4, 2, 1, 7, 3, 6, 5
+      1, 2, 3, 4, 5, 6, 7, 8, 9
   };
 
   static uint32_t nBeepIdx = 0;
@@ -87,10 +87,10 @@ void _BeepMode(void)
 
 void _AlarmMode(void)
 {
-  // alarm files 10-18
+  // alarm files 10-19
   const uint8_t arrAlarmSounds[] =
   {
-      10, 11, 12, 13, 14, 15, 16, 17, 18,
+      10, 11, 12, 13, 14, 15, 16, 17, 18, 19
   };
   static uint8_t nAlarmIdx = 0;
 

@@ -45,7 +45,7 @@ bool HW_Init(void)
 //  Clock_SetPLLasSysClk(8, 100, 2, CLOCK_SOURCE_HSI);  // 16 / 8 * 100 / 2 = 100Mhz
 
   // HSI 16MHz / 4 = 4MHz
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_4);
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_8);
 
 //  WDG_Init(WDG_Timeout_32s);
 
