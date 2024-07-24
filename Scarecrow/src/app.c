@@ -79,7 +79,7 @@ void _BeepMode(void)
 
   _PlaySound(arrBeepSounds[nBeepIdx]);
   nBeepIdx++;
-  if (nBeepIdx > sizeof(nBeepIdx))
+  if (nBeepIdx > sizeof(arrBeepSounds))
   {
     nBeepIdx = 0;
   }
