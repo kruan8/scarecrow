@@ -106,6 +106,12 @@ void _PlaySound(uint8_t nFileNumber)
 {
   HW_SetMp3Supply(true);
 
+  HW_SetBoardLed(true);
+  Timer_Delay_ms(100);
+  HW_SetBoardLed(false);
+
+
+
   HW_SetFileNumber(nFileNumber);
   while(!HW_IsPlayerBusy());
   HW_SetFileNumber(0);
@@ -113,8 +119,6 @@ void _PlaySound(uint8_t nFileNumber)
 
   HW_SetMp3Supply(false);
 
-  HW_SetBoardLed(true);
-  Timer_Delay_ms(100);
-  HW_SetBoardLed(false);
+
 
 }

@@ -56,17 +56,17 @@ bool HW_Init(void)
   BOARD_LED_OFF;
 
   // supply ctrl pin and set supply off
+  GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_od, pushpull_no, speed_low);
   HW_SUPPLY_CTRL_OFF;
-  GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_pushpull, pushpull_no, speed_low);
 
-  GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN3, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN4, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN5, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN6, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN7, mode_output, outtype_pushpull, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN3, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN4, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN5, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN6, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN7, mode_output, outtype_od, pushpull_no, speed_low);
 
   HW_SetFileNumber(0);
 
