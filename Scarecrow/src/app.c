@@ -110,8 +110,6 @@ void _PlaySound(uint8_t nFileNumber)
   Timer_Delay_ms(100);
   HW_SetBoardLed(false);
 
-
-
   HW_SetFileNumber(nFileNumber);
   while(!HW_IsPlayerBusy());
   HW_SetFileNumber(0);

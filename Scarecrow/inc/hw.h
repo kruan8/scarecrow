@@ -16,6 +16,7 @@ void HW_SetBoardLed(bool bOn);
 void HW_SetMp3Supply(bool bOn);
 bool HW_IsPlayerBusy(void);
 bool HW_IsPirActive(void);
+void HW_ConfigureConfigBusyPin(bool bConfig);
 
 void HW_ReadCPUID(void);
 

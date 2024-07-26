@@ -44,8 +44,8 @@ bool HW_Init(void)
 {
 //  Clock_SetPLLasSysClk(8, 100, 2, CLOCK_SOURCE_HSI);  // 16 / 8 * 100 / 2 = 100Mhz
 
-  // HSI 16MHz / 4 = 4MHz
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_8);
+  // HSI 16MHz / 16 = 1MHz
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_16);
 
 //  WDG_Init(WDG_Timeout_32s);
 
@@ -61,7 +61,7 @@ bool HW_Init(void)
 
   GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_od, pushpull_no, speed_low);
-  GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_pushpull, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN3, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN4, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN5, mode_output, outtype_od, pushpull_no, speed_low);
@@ -70,8 +70,7 @@ bool HW_Init(void)
 
   HW_SetFileNumber(0);
 
-  GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
-  GPIO_RESETPIN(HW_CONF_PIN);
+  HW_ConfigureConfigBusyPin(true);
 
   GPIO_ConfigPin(HW_PIR_INPUT, mode_input, outtype_pushpull, pushpull_no, speed_low);
 
@@ -82,9 +81,10 @@ void HW_SetMp3Supply(bool bOn)
 {
   if (bOn)
   {
+    HW_ConfigureConfigBusyPin(true);
     HW_SUPPLY_CTRL_ON;
     Timer_Delay_ms(300);
-    GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_down, speed_low);
+    HW_ConfigureConfigBusyPin(false);
   }
   else
   {
@@ -95,6 +95,19 @@ void HW_SetMp3Supply(bool bOn)
 void HW_SetBoardLed(bool bOn)
 {
   bOn ? BOARD_LED_ON : BOARD_LED_OFF;
+}
+
+void HW_ConfigureConfigBusyPin(bool bConfigIsActive)
+{
+  if (bConfigIsActive == true)
+  {
+    GPIO_ConfigPin(HW_CONF_PIN, mode_output, outtype_pushpull, pushpull_no, speed_low);
+    GPIO_RESETPIN(HW_CONF_PIN);
+  }
+  else
+  {
+    GPIO_ConfigPin(HW_CONF_PIN, mode_input, outtype_pushpull, pushpull_down, speed_low);
+  }
 }
 
 bool HW_IsPlayerBusy(void)
