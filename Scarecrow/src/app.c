@@ -12,7 +12,7 @@
 #include "timer.h"
 #include "watchdog.h"
 
-#define BEEP_PAUSE_MS       17000
+#define BEEP_PAUSE_MS       20000
 
 typedef enum
 {
@@ -79,7 +79,7 @@ void _BeepMode(void)
 
   _PlaySound(arrBeepSounds[nBeepIdx]);
   nBeepIdx++;
-  if (nBeepIdx > sizeof(arrBeepSounds))
+  if (nBeepIdx >= sizeof(arrBeepSounds))
   {
     nBeepIdx = 0;
   }
@@ -92,11 +92,11 @@ void _AlarmMode(void)
   {
       10, 11, 12, 13, 14, 15, 16, 17, 18, 19
   };
-  static uint8_t nAlarmIdx = 0;
+  static uint32_t nAlarmIdx = 0;
 
   _PlaySound(arrAlarmSounds[nAlarmIdx]);
   nAlarmIdx++;
-  if (nAlarmIdx > sizeof(arrAlarmSounds))
+  if (nAlarmIdx >= sizeof(arrAlarmSounds))
   {
     nAlarmIdx = 0;
   }
@@ -116,7 +116,4 @@ void _PlaySound(uint8_t nFileNumber)
   while(HW_IsPlayerBusy());
 
   HW_SetMp3Supply(false);
-
-
-
 }
