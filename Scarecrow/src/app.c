@@ -43,6 +43,7 @@ void App_Exec(void)
   {
   case APP_MODE_BEEP:
     _BeepMode();
+    HW_MesureVoltage();
     break;
   case APP_MODE_ALARM:
     _AlarmMode();

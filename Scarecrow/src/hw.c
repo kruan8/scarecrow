@@ -40,6 +40,26 @@
 #define HW_FILE_PIN6             PB6
 #define HW_FILE_PIN7             PB7
 
+// Voltrage measure control pin
+#define HW_VOLTAGE_CTRL          PA4
+#define HW_VOLTAGE_CTRL_ENABLE   GPIO_RESETPIN(HW_VOLTAGE_CTRL)
+#define HW_VOLTAGE_CTRL_DISABLE  GPIO_SETPIN(HW_VOLTAGE_CTRL)
+
+// VBAT voltage input
+#define HW_VBAT                  PA5
+#define HW_VBAT_ADC              LL_ADC_CHANNEL_5
+
+// Solar panel voltage input
+#define HW_SOL                   PA6
+#define HW_SOL_ADC               LL_ADC_CHANNEL_6
+
+#define APP_ADC_CONV             8       // number of conversions
+
+uint32_t                      g_VbatVoltage_mV;
+uint32_t                      g_SolVoltage_mV;
+
+void _AdcInit(void);
+
 bool HW_Init(void)
 {
 //  Clock_SetPLLasSysClk(8, 100, 2, CLOCK_SOURCE_HSI);  // 16 / 8 * 100 / 2 = 100Mhz
@@ -59,6 +79,10 @@ bool HW_Init(void)
   GPIO_ConfigPin(HW_SUPPLY_CTRL, mode_output, outtype_od, pushpull_no, speed_low);
   HW_SUPPLY_CTRL_OFF;
 
+  // measure ctrl pin
+  GPIO_ConfigPin(HW_VOLTAGE_CTRL, mode_output, outtype_od, pushpull_no, speed_low);
+  HW_VOLTAGE_CTRL_DISABLE;
+
   GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_pushpull, pushpull_no, speed_low);
@@ -73,6 +97,8 @@ bool HW_Init(void)
   HW_ConfigureConfigBusyPin(true);
 
   GPIO_ConfigPin(HW_PIR_INPUT, mode_input, outtype_pushpull, pushpull_no, speed_low);
+
+  _AdcInit();
 
   return true;
 }
@@ -95,6 +121,100 @@ void HW_SetMp3Supply(bool bOn)
 void HW_SetBoardLed(bool bOn)
 {
   bOn ? BOARD_LED_ON : BOARD_LED_OFF;
+}
+
+void HW_VoltageMeasureControl(bool bEnable)
+{
+  if (bEnable == true)
+  {
+     HW_VOLTAGE_CTRL_ENABLE;
+
+     // 1nF capacitor on resistor divider
+     Timer_Delay_ms(10);
+  }
+  else
+  {
+    HW_VOLTAGE_CTRL_DISABLE;
+  }
+}
+
+void _AdcInit(void)
+{
+  //enable ADC1 clock
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1);
+
+  // Set ADC clock (conversion clock) common to several ADC instances
+  LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(), LL_ADC_CLOCK_SYNC_PCLK_DIV2);
+
+  LL_ADC_InitTypeDef ADC_Init;
+  ADC_Init.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;
+  ADC_Init.Resolution = LL_ADC_RESOLUTION_12B;
+  ADC_Init.SequencersScanMode = LL_ADC_SEQ_SCAN_DISABLE;
+  LL_ADC_Init(ADC1, &ADC_Init);
+
+  LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
+
+  LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
+
+  LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_ADC1);
+}
+
+uint32_t HW_AdcMeasure(void)
+{
+  LL_ADC_REG_SetFlagEndOfConversion(ADC1, LL_ADC_REG_FLAG_EOC_UNITARY_CONV);
+  LL_ADC_Enable(ADC1);
+
+  uint32_t nValue = 0;
+  for (uint8_t i = 0; i < APP_ADC_CONV; i++)
+  {
+    LL_ADC_REG_StartConversionSWStart(ADC1);
+
+    //wait for conversion complete
+    while(!LL_ADC_IsActiveFlag_EOCS(ADC1));
+
+    //read ADC value
+    nValue += LL_ADC_REG_ReadConversionData12(ADC1);
+  }
+
+  LL_ADC_Disable(ADC1);
+
+  nValue /= APP_ADC_CONV;
+  return nValue;
+}
+
+void HW_MesureVoltage(void)
+{
+  HW_VoltageMeasureControl(true);
+
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1);
+
+  LL_ADC_SetChannelSamplingTime(ADC1, HW_VBAT_ADC, LL_ADC_SAMPLINGTIME_144CYCLES);
+  LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);  // 1 vstup
+  LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, HW_VBAT_ADC);
+  uint32_t nValue = HW_AdcMeasure();
+//  nValue = nValue * nVdda_mv / 4095;
+
+  // resistor divider divides 2
+  g_VbatVoltage_mV = nValue << 1;  // *2
+
+  LL_ADC_SetChannelSamplingTime(ADC1, HW_SOL_ADC, LL_ADC_SAMPLINGTIME_144CYCLES);
+  LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, HW_SOL_ADC);
+  nValue = HW_AdcMeasure();
+  g_SolVoltage_mV = nValue << 1;  // *2
+
+  HW_VoltageMeasureControl(false);
+
+  LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_ADC1);
+}
+
+uint32_t HW_GetVbatVoltage_mV(void)
+{
+  return g_VbatVoltage_mV;
+}
+
+uint32_t HW_GetSolVoltage_mV(void)
+{
+  return g_SolVoltage_mV;
 }
 
 void HW_ConfigureConfigBusyPin(bool bConfigIsActive)

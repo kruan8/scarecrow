@@ -13,6 +13,10 @@
 
 bool HW_Init(void);
 void HW_SetBoardLed(bool bOn);
+void HW_VoltageMeasureControl(bool bEnable);
+void HW_MesureVoltage(void);
+uint32_t HW_GetVbatVoltage_mV(void);
+uint32_t HW_GetSolVoltage_mV(void);
 void HW_SetMp3Supply(bool bOn);
 bool HW_IsPlayerBusy(void);
 bool HW_IsPirActive(void);
