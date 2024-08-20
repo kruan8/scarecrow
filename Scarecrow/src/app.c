@@ -12,10 +12,14 @@
 #include "timer.h"
 #include "watchdog.h"
 
-#define BEEP_PAUSE_MS       20000
+#define BEEP_PAUSE_MS                     20000
+#define APP_MIN_VBAT_VOLTAGE_END_MV       3000
+#define APP_MIN_VBAT_VOLTAGE_START_MV     3200
+#define APP_MIN_SOL_VOLTAGE_MV            2000
 
 typedef enum
 {
+  APP_MODE_NONE,
   APP_MODE_BEEP,
   APP_MODE_ALARM,
 } app_mode_e;
@@ -38,12 +42,10 @@ void App_Init(void)
 
 void App_Exec(void)
 {
-
   switch (eMode)
   {
   case APP_MODE_BEEP:
     _BeepMode();
-    HW_MesureVoltage();
     break;
   case APP_MODE_ALARM:
     _AlarmMode();
@@ -64,6 +66,23 @@ void App_Exec(void)
       eMode = APP_MODE_ALARM;
       break;
     }
+  }
+
+  HW_MesureVoltage();
+
+  if (eMode == APP_MODE_ALARM && HW_GetSolVoltage_mV() < APP_MIN_SOL_VOLTAGE_MV)
+  {
+    eMode = APP_MODE_BEEP;
+  }
+
+  if (HW_GetVbatVoltage_mV() < APP_MIN_VBAT_VOLTAGE_END_MV)
+  {
+    eMode = APP_MODE_NONE;
+  }
+
+  if (eMode == APP_MODE_NONE && HW_GetVbatVoltage_mV() > APP_MIN_VBAT_VOLTAGE_START_MV)
+  {
+    eMode = APP_MODE_BEEP;
   }
 
 }

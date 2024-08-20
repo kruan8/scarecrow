@@ -83,6 +83,9 @@ bool HW_Init(void)
   GPIO_ConfigPin(HW_VOLTAGE_CTRL, mode_output, outtype_od, pushpull_no, speed_low);
   HW_VOLTAGE_CTRL_DISABLE;
 
+  GPIO_ConfigPin(HW_VBAT, mode_analog, outtype_od, pushpull_no, speed_low);
+  GPIO_ConfigPin(HW_SOL, mode_analog, outtype_od, pushpull_no, speed_low);
+
   GPIO_ConfigPin(HW_FILE_PIN0, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN1, mode_output, outtype_od, pushpull_no, speed_low);
   GPIO_ConfigPin(HW_FILE_PIN2, mode_output, outtype_pushpull, pushpull_no, speed_low);
@@ -130,7 +133,7 @@ void HW_VoltageMeasureControl(bool bEnable)
      HW_VOLTAGE_CTRL_ENABLE;
 
      // 1nF capacitor on resistor divider
-     Timer_Delay_ms(10);
+     Timer_Delay_ms(2);
   }
   else
   {
@@ -152,16 +155,15 @@ void _AdcInit(void)
   ADC_Init.SequencersScanMode = LL_ADC_SEQ_SCAN_DISABLE;
   LL_ADC_Init(ADC1, &ADC_Init);
 
-  LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
+  LL_ADC_REG_SetFlagEndOfConversion(ADC1, LL_ADC_REG_FLAG_EOC_UNITARY_CONV);
 
-  LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
+  LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
 
   LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_ADC1);
 }
 
 uint32_t HW_AdcMeasure(void)
 {
-  LL_ADC_REG_SetFlagEndOfConversion(ADC1, LL_ADC_REG_FLAG_EOC_UNITARY_CONV);
   LL_ADC_Enable(ADC1);
 
   uint32_t nValue = 0;
@@ -192,7 +194,7 @@ void HW_MesureVoltage(void)
   LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);  // 1 vstup
   LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, HW_VBAT_ADC);
   uint32_t nValue = HW_AdcMeasure();
-//  nValue = nValue * nVdda_mv / 4095;
+  nValue = nValue * 3300 / 4095;
 
   // resistor divider divides 2
   g_VbatVoltage_mV = nValue << 1;  // *2
@@ -200,6 +202,7 @@ void HW_MesureVoltage(void)
   LL_ADC_SetChannelSamplingTime(ADC1, HW_SOL_ADC, LL_ADC_SAMPLINGTIME_144CYCLES);
   LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, HW_SOL_ADC);
   nValue = HW_AdcMeasure();
+  nValue = nValue * 3300 / 4095;
   g_SolVoltage_mV = nValue << 1;  // *2
 
   HW_VoltageMeasureControl(false);
